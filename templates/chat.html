@@ -1,0 +1,81 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI 对话</title>
+    <style>
+      body { font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; margin: 0; background: #f7f7f8; color: #1f2328; overflow: hidden; }
+      .container { width: 70%; height: 100vh; margin: 0 auto; display: flex; flex-direction: column; padding: 20px; box-sizing: border-box; }
+      h1 { font-size: 22px; margin: 0 0 12px; }
+      .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+      #chat_box { display:flex; flex-direction:column; gap:10px; flex:1; min-height:0; overflow-y:auto; border:1px solid #e5e7eb; border-radius:8px; padding:10px; background:#fafafa; }
+      .input-row { display:flex; gap:8px; margin-top:10px; }
+      textarea { width:100%; padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px; height:64px; resize: none; overflow:auto; }
+      button { padding:10px 14px; border:0; border-radius:8px; background:#111827; color:#fff; cursor:pointer; white-space:nowrap; }
+      .bubble { max-width:75%; padding:8px 10px; border-radius:10px; white-space:pre-wrap; }
+      .user { align-self:flex-end; background:#111827; color:#fff; }
+      .ai { align-self:flex-start; background:#e5e7eb; color:#111827; }
+      .hint { font-size:12px; color:#6b7280; margin-top:6px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">导航</div>
+          <div style="display:flex;gap:8px;">
+            <a href="/" style="text-decoration:none;background:#111827;color:#fff;padding:8px 12px;border-radius:8px;">主页</a>
+            <a href="/decision" style="text-decoration:none;background:#374151;color:#fff;padding:8px 12px;border-radius:8px;">选品操作台</a>
+          </div>
+        </div>
+        <h1>AI 对话</h1>
+      </div>
+      <div class="card">
+        <div id="chat_box"></div>
+        <div class="input-row">
+          <textarea id="qa_question" placeholder="输入你的问题，回车发送..."></textarea>
+          <button onclick="askQA()">发送</button>
+        </div>
+        <div class="hint">接口：POST /v1/qa</div>
+      </div>
+    </div>
+
+    <script>
+      async function askQA() {
+        const input = document.getElementById('qa_question');
+        const question = input.value.trim();
+        if (!question) return;
+        appendMsg('user', question);
+        input.value = '';
+        const res = await fetch('/v1/qa', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
+        });
+        const data = await res.json();
+        if (data && data.answer) {
+          appendMsg('ai', data.answer);
+        } else {
+          appendMsg('ai', JSON.stringify(data, null, 2));
+        }
+      }
+
+      function appendMsg(role, text) {
+        const box = document.getElementById('chat_box');
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble ' + (role === 'user' ? 'user' : 'ai');
+        bubble.textContent = text;
+        box.appendChild(bubble);
+        box.scrollTop = box.scrollHeight;
+      }
+
+      document.getElementById('qa_question').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          askQA();
+        }
+      });
+    </script>
+  </body>
+</html>

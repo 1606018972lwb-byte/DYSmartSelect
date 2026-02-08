@@ -1,0 +1,9 @@
+﻿#版本号
+
+APP_VERSION=0.260208.02
+
+#大模型
+BASE_URL=your-url
+MODEL_API=
+MODEL=you-model
+OPENAI_API_KEY=you-key
