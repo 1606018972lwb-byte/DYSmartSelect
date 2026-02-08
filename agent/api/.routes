@@ -1,0 +1,6 @@
+﻿INDEX_ROUTE=/
+DECISION_PAGE_ROUTE=/decision
+CHAT_ROUTE=/chat
+DECISION_FLASK_API=/v1/decision
+FEEDBACK_FLASK_API=/v1/feedback
+QA_FLASK_API=/v1/qa

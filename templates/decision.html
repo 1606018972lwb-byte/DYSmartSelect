@@ -1,0 +1,157 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>抖音服装测款选品 Agent</title>
+    <style>
+      body { font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; margin: 24px; background: #f7f7f8; color: #1f2328; }
+      .container { max-width: 960px; margin: 0 auto; }
+      h1 { font-size: 22px; margin: 0 0 16px; }
+      .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+      .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      label { display: block; font-size: 12px; color: #6b7280; margin-bottom: 6px; }
+      input, select, textarea { width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+      textarea { min-height: 80px; }
+      button { padding: 10px 14px; border: 0; border-radius: 8px; background: #111827; color: #fff; cursor: pointer; }
+      button.secondary { background: #374151; }
+      .actions { display: flex; gap: 8px; margin-top: 12px; }
+      pre { background: #111827; color: #e5e7eb; padding: 12px; border-radius: 8px; overflow: auto; }
+      .hint { font-size: 12px; color: #6b7280; }
+      @media (max-width: 768px) {
+        .row { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div>
+          <div style="font-size:12px;color:#6b7280;margin-bottom:6px;">导航</div>
+          <div style="display:flex;gap:8px;">
+            <a href="/" style="text-decoration:none;background:#111827;color:#fff;padding:8px 12px;border-radius:8px;">主页</a>
+            <a href="/chat" style="text-decoration:none;background:#374151;color:#fff;padding:8px 12px;border-radius:8px;">AI 问答</a>
+          </div>
+        </div>
+        <h1>抖音服装测款选品 Agent（本地操作台）</h1>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div>
+            <label>user_id</label>
+            <input id="user_id" value="u1" />
+          </div>
+          <div>
+            <label>category</label>
+            <select id="category">
+              <option value="top">top</option>
+              <option value="pants">pants</option>
+              <option value="outer">outer</option>
+              <option value="set">set</option>
+            </select>
+          </div>
+          <div>
+            <label>price_band</label>
+            <input id="price_band" value="79-129" />
+          </div>
+          <div>
+            <label>account_stage</label>
+            <select id="account_stage">
+              <option value="explore">explore</option>
+              <option value="converge">converge</option>
+            </select>
+          </div>
+          <div>
+            <label>daily_slots</label>
+            <select id="daily_slots">
+              <option value="1">1</option>
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+            </select>
+          </div>
+          <div>
+            <label>in_stock</label>
+            <select id="in_stock">
+              <option value="true" selected>true</option>
+              <option value="false">false</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions">
+          <button onclick="makeDecision()">生成决策</button>
+          <span class="hint">调用 POST /v1/decision</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row">
+          <div>
+            <label>decision_id</label>
+            <input id="decision_id" placeholder="从上方返回中自动填充" />
+          </div>
+          <div>
+            <label>outcome</label>
+            <select id="outcome">
+              <option value="no_volume">no_volume</option>
+              <option value="some_volume">some_volume</option>
+              <option value="scaled">scaled</option>
+            </select>
+          </div>
+          <div>
+            <label>user_id (反馈)</label>
+            <input id="feedback_user_id" value="u1" />
+          </div>
+        </div>
+        <div class="actions">
+          <button class="secondary" onclick="sendFeedback()">提交反馈</button>
+          <span class="hint">调用 POST /v1/feedback</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <label>响应结果</label>
+        <pre id="output">{}</pre>
+      </div>
+    </div>
+
+    <script>
+      async function makeDecision() {
+        const payload = {
+          user_id: document.getElementById('user_id').value.trim(),
+          category: document.getElementById('category').value,
+          price_band: document.getElementById('price_band').value.trim(),
+          account_stage: document.getElementById('account_stage').value,
+          daily_slots: parseInt(document.getElementById('daily_slots').value, 10),
+          in_stock: document.getElementById('in_stock').value === 'true'
+        };
+        const res = await fetch('/v1/decision', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+        if (data.decision_id) {
+          document.getElementById('decision_id').value = data.decision_id;
+          document.getElementById('feedback_user_id').value = payload.user_id;
+        }
+      }
+
+      async function sendFeedback() {
+        const payload = {
+          user_id: document.getElementById('feedback_user_id').value.trim(),
+          decision_id: document.getElementById('decision_id').value.trim() || null,
+          outcome: document.getElementById('outcome').value
+        };
+        const res = await fetch('/v1/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+      }
+    </script>
+  </body>
+</html>
