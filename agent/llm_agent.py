@@ -10,6 +10,7 @@ try:
 except ImportError:  # LangChain >=0.2.15 moved AgentExecutor
     from langchain.agents.agent import AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
 from .config import LLM_BASE_URL, LLM_MODEL, LLM_MODEL_API, OPENAI_API_KEY
@@ -72,16 +73,50 @@ def run_langchain_agent(draft: Dict[str, Any]) -> Tuple[Dict[str, Any], List[str
         return draft, ["agent:fallback"]
 
 
-def run_qa(question: str) -> str:
+def _build_qa_messages(question: str, history: List[Dict[str, str]]) -> List[Any]:
+    '''
+    功能：
+    组装聊天消息，包含简短系统提示与历史上下文。
+
+    :param question: 用户问题
+    :type question: str
+    :param history: 历史消息列表
+    :type history: List[Dict[str, str]]
+    :return: LangChain 消息列表
+    :rtype: List[Any]
+    '''
+    messages: List[Any] = [
+        SystemMessage(
+            content="你是一个简洁、专业的电商选品与经营助手。回答要直接、可执行。"
+        )
+    ]
+    for item in history:
+        role = str(item.get("role", "")).lower()
+        content = str(item.get("content", "")).strip()
+        if not content:
+            continue
+        if role == "user":
+            messages.append(HumanMessage(content=content))
+        elif role == "ai":
+            messages.append(AIMessage(content=content))
+    messages.append(HumanMessage(content=question))
+    return messages
+
+
+def run_qa(question: str, history: List[Dict[str, str]] | None = None) -> str:
     '''
     功能：
     执行简单问答，返回模型文本回答。
 
     :param question: 用户问题
     :type question: str
+    :param history: 历史消息列表
+    :type history: List[Dict[str, str]] | None
     :return: 模型回答文本
     :rtype: str
     '''
     llm = _build_llm()
-    response = llm.invoke(question)
+    history = history or []
+    messages = _build_qa_messages(question, history)
+    response = llm.invoke(messages)
     return getattr(response, "content", str(response))

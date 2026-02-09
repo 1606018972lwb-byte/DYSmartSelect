@@ -52,6 +52,41 @@ APP_VERSION=0.260208.07
 BASE_URL=__FILL__
 MODEL=__FILL__
 OPENAI_API_KEY=__FILL__
+STORE_BACKEND=memory
+# Postgres（当 STORE_BACKEND=postgres 时）
+POSTGRES_HOST=127.0.0.1
+POSTGRES_PORT=5432
+POSTGRES_DB=agent_db
+POSTGRES_USER=agent_user
+POSTGRES_PASSWORD=agent_pwd
+POSTGRES_ADMIN_DB=postgres
+POSTGRES_AUTO_CREATE_DB=true
+POSTGRES_SCHEMA=public
+POSTGRES_CONNECT_TIMEOUT=5
+CHAT_MAX_TURNS=12
+STORE_BACKEND=memory
+# 任选其一：POSTGRES_DSN 或分项配置
+POSTGRES_DSN=postgresql://user:password@host:5432/dbname
+POSTGRES_HOST=127.0.0.1
+POSTGRES_PORT=5432
+POSTGRES_DB=agent_db
+POSTGRES_USER=agent_user
+POSTGRES_PASSWORD=agent_pwd
+POSTGRES_ADMIN_DB=postgres
+POSTGRES_AUTO_CREATE_DB=true
+POSTGRES_SCHEMA=public
+POSTGRES_CONNECT_TIMEOUT=5
+CHAT_MAX_TURNS=12
+STORE_BACKEND=memory
+POSTGRES_DSN=postgresql://user:password@host:5432/dbname
+POSTGRES_SCHEMA=public
+POSTGRES_CONNECT_TIMEOUT=5
+CHAT_MAX_TURNS=12
+STORE_BACKEND=memory
+POSTGRES_DSN=postgresql://user:password@host:5432/dbname
+POSTGRES_SCHEMA=public
+POSTGRES_CONNECT_TIMEOUT=5
+CHAT_MAX_TURNS=12
 ```
 
 ## 路由配置
@@ -90,16 +125,23 @@ python app.py
 }
 ```
 
+### AI 问答
+`POST /v1/qa`
+
+请求示例：
+```json
+{
+  "user_id": "u1",
+  "question": "请给出今天选品的三条建议"
+}
+```
+
 ## 备注
 - 当前版本使用**内存存储**（`agent/memory_store.py`），服务重启后状态会丢失。
+- AI 问答支持**基于 user_id 的短期记忆**（最近 12 轮对话上下文）。
+- 设置 `STORE_BACKEND=postgres` 后将使用 Postgres 持久化（自动创建 `user_state` 与 `chat_history` 表）。
 - 如果需要持久化（SQLite 等），请告知我可恢复数据库版本。
 
-## 更新日志
-- 2026-02-08 21:30: 初始化工程结构，支持 Flask + LangChain + 简易网页操作台。
-- 2026-02-08 21:45: API 拆分到 `agent/api` 目录，路由路径改为从环境变量读取。
-- 2026-02-08 22:05: 导航页/选品页/AI问答页拆分为多页面，新增 `/decision` 与 `/chat`。
-- 2026-02-08 23:10: AI 对话页面调整为全屏布局，聊天区支持滚动查看历史。
-- 2026-02-08 23:20: 导航页更新为双按钮入口，选品与对话页增加顶部导航区。
 
 # 抖音服装测款选品分析 Agent
 
@@ -190,8 +232,21 @@ python app.py
 }
 ```
 
+### AI 问答
+`POST /v1/qa`
+
+请求示例：
+```json
+{
+  "user_id": "u1",
+  "question": "请给出今天选品的三条建议"
+}
+```
+
 ## 备注
 - 当前版本使用**内存存储**（`agent/memory_store.py`），服务重启后状态会丢失。
+- AI 问答支持**基于 user_id 的短期记忆**（最近 12 轮对话上下文）。
+- 设置 `STORE_BACKEND=postgres` 后将使用 Postgres 持久化（自动创建 `user_state` 与 `chat_history` 表）。
 - 如果需要持久化（SQLite 等），请告知我可恢复数据库版本。
 
 ## 更新日志
@@ -200,3 +255,4 @@ python app.py
 - 2026-02-08 22:05: 导航页/选品页/AI问答页拆分为多页面，新增 `/decision` 与 `/chat`。
 - 2026-02-08 23:10: AI 对话页面调整为全屏布局，聊天区支持滚动查看历史。
 - 2026-02-08 23:20: 导航页更新为双按钮入口，选品与对话页增加顶部导航区。
+- 2026-02-09 00:30: 新增 Postgres 持久化存储与自动建库配置，问答记忆与用户状态支持落库。

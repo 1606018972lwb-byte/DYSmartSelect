@@ -12,6 +12,18 @@ LLM_BASE_URL = os.getenv("BASE_URL", "")
 LLM_MODEL = os.getenv("MODEL", "")
 LLM_MODEL_API = os.getenv("MODEL_API", "")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+STORE_BACKEND = os.getenv("STORE_BACKEND", "memory")
+POSTGRES_DSN = os.getenv("POSTGRES_DSN", "")
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "")
+POSTGRES_PORT = int(os.getenv("POSTGRES_PORT", "5432"))
+POSTGRES_DB = os.getenv("POSTGRES_DB", "")
+POSTGRES_USER = os.getenv("POSTGRES_USER", "")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "")
+POSTGRES_ADMIN_DB = os.getenv("POSTGRES_ADMIN_DB", "postgres")
+POSTGRES_AUTO_CREATE_DB = os.getenv("POSTGRES_AUTO_CREATE_DB", "true").lower() in ("1", "true", "yes", "on")
+POSTGRES_SCHEMA = os.getenv("POSTGRES_SCHEMA", "public")
+POSTGRES_CONNECT_TIMEOUT = int(os.getenv("POSTGRES_CONNECT_TIMEOUT", "5"))
+CHAT_MAX_TURNS = int(os.getenv("CHAT_MAX_TURNS", "12"))
 
 TEMPLATES = {
     "headline": {

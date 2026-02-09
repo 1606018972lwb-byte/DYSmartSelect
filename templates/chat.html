@@ -37,21 +37,32 @@
           <textarea id="qa_question" placeholder="输入你的问题，回车发送..."></textarea>
           <button onclick="askQA()">发送</button>
         </div>
-        <div class="hint">接口：POST /v1/qa</div>
+        <div class="hint">接口：POST /v1/qa（同一浏览器会保持对话记忆，重启服务后清空）</div>
       </div>
     </div>
 
     <script>
+      function getUserId() {
+        const key = 'qa_user_id';
+        let id = localStorage.getItem(key);
+        if (!id) {
+          id = 'u_' + Math.random().toString(36).slice(2, 10);
+          localStorage.setItem(key, id);
+        }
+        return id;
+      }
+
       async function askQA() {
         const input = document.getElementById('qa_question');
         const question = input.value.trim();
         if (!question) return;
         appendMsg('user', question);
         input.value = '';
+        const user_id = getUserId();
         const res = await fetch('/v1/qa', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ question })
+          body: JSON.stringify({ question, user_id })
         });
         const data = await res.json();
         if (data && data.answer) {
